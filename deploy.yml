@@ -1,0 +1,16 @@
+---
+- name: Deployment
+  hosts: all
+  become_user: root
+  vars:
+          ip: 192.168.91.143
+          domaine: soufianedep.org
+          fqdn: soufianedep
+          nommachine: debian
+          mysql_root_mdp: mdp
+          mysql_user_login: soufiane
+          mysql_user_mdp: mdp
+  roles:
+          - bind9
+          - apache2
+          - mariadb

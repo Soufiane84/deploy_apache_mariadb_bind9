@@ -1,0 +1,49 @@
+---
+# tasks file for apache2
+- name: Deploy apache2
+  apt:
+          name=apache2
+          update_cache=yes
+          state=latest
+- name: preparation suppression sites par defaut
+  find:
+          paths: /etc/apache2/sites-enabled/
+          patterns: "*.conf"
+  register: files_to_delete
+- name: suppression sites
+  file:
+          path: "{{ item.path }}"
+          state: absent 
+  with_items: "{{ files_to_delete.files }}"
+- name: copie du fichier de config soufiane.org
+  ansible.builtin.template:
+          src: ../templates/soufianeconf.j2
+          dest: /etc/apache2/sites-available/soufiane.conf
+- name: lien symbolique pour enable le site
+  file:
+          src: /etc/apache2/sites-available/soufiane.conf
+          dest: /etc/apache2/sites-enabled/soufiane.conf
+          state: link
+- name: creer le site dans www/html
+  file:
+          path: /var/www/html/soufiane
+          state: directory
+          mode: '0755'
+- name: supprimer index par defaut
+  file:
+          path: /var/www/html/index.html
+          state: absent
+- name: mettre le bon index
+  template:
+          src: ../templates/indexhtml.j2
+          dest: /var/www/html/soufiane/index.html
+- name: copier mon script pour oppenssl
+  copy:
+          src: opensslconfig.sh
+          dest: /
+          owner: root
+          group: root
+          mode: '0777'
+- name: installer et paramettrer ssl
+  command: sh /opensslconfig.sh
+  notify: restart apache2

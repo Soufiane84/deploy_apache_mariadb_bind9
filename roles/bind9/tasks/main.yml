@@ -1,0 +1,29 @@
+---
+- name: Install Bind9
+  apt:
+          name: bind9
+          update_cache: yes
+          state: latest
+- name: envoie de soufianedep.zone
+  template:
+          src: ../templates/soufianedepzone.j2
+          dest: /etc/bind/{{ fqdn }}.zone
+- name: supprimer named.conf.local
+  file:
+          path: /etc/bind/named.conf.local
+          state: absent
+- name: remplacer named.conf.local
+  template:
+          src: ../templates/namedconflocal.j2
+          dest: /etc/bind/named.conf.local
+  notify: restart bind9         
+- name: supprimer le resolv
+  file:
+          path: /etc/resolv.conf
+          state: absent
+- name: remplacer le resolv
+  template:
+          src: ../templates/resolvconf.j2
+          dest: /etc/resolv.conf
+  notify: restart bind9
+          
